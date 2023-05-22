@@ -96,7 +96,9 @@ mongoose.connection
         let port = process.env.SERVER_PORT || 5001;
         const expressServer = Server.listen(port, () => {
             logger.info(
-                `listening on ${process.env.MODE === MODE.prod ? `${process.env.CORS_ORIGIN}/api` : `http//localhost:${port}`}`,
+                `listening on ${
+                    process.env.MODE === MODE.prod ? `${process.env.CORS_ORIGIN}/api port ${port}` : `http//localhost:${port}`
+                }`,
             );
         });
     })
