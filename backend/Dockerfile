@@ -1,11 +1,11 @@
-FROM python:3.8-alpine
+FROM node:16.14-alpine
 
-WORKDIR /app
+WORKDIR '/app'
 
-COPY . .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN mkdir -p /media
+COPY ./backend/package.json /app
+RUN npm install
+COPY ./backend /app
+EXPOSE 5001
 
-
-expose 5050
-CMD [ "python", "./backend.py" ]
+ENTRYPOINT [ "npm", "run" ]
+CMD ["docker"]
