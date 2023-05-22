@@ -14,7 +14,8 @@
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.11.1",
         "react-scripts": "5.0.1",
-        "styled-components": "^5.3.10"
+        "styled-components": "^5.3.10",
+        "xlsx": "^0.18.5"
     },
     "scripts": {
         "start": "react-scripts start",

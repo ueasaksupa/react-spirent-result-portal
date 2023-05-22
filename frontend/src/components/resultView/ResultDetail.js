@@ -17,10 +17,6 @@ const ResultDetail = (props) => {
     const [errorMsg, setErrorMsg] = useState(null);
     const [data, setData] = useState(null);
     const [filter, setFilter] = useState({
-        showBG: true,
-        showBwService: true,
-        showLtService: true,
-        showSpService: true,
         search: "",
     });
     let { testId } = useParams();
@@ -32,7 +28,6 @@ const ResultDetail = (props) => {
     }, [testId]);
 
     const preProcessData = async () => {
-        let result, testcases, template;
         // get result
         try {
             let resultResp = await backend.get(`/result/${testId}`);

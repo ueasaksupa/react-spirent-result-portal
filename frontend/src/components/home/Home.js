@@ -9,20 +9,14 @@ import DataTable, { createTheme } from "react-data-table-component";
 const Home = () => {
     const staticResult = useRef();
     const [modalShow, setModalShow] = useState({ remark: false, delete: false });
-    const [selectedRemark, setSelectedRemark] = useState(null);
+    const [selectedRemark, setSelectedRemark] = useState("");
     const [selectedTestNumber, setSelectedTestNumber] = useState(null);
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
-
     const navigate = useNavigate();
-    // Component did mount
-    useEffect(() => {
-        document.title = "portal :: All results";
-        preProcessData();
-    }, []);
-    //
-    const preProcessData = async () => {
-        let results, testcases;
+
+    const fetchResultData = async () => {
+        let results;
         // get results
         console.log("preprocess data");
         try {
@@ -58,7 +52,7 @@ const Home = () => {
         console.log(staticResult.current);
         for (const row of staticResult.current) {
             for (const col in row) {
-                if (row[col].toString().includes(value)) {
+                if (typeof row[col] === "string" && row[col].toString().includes(value)) {
                     tmp.push(row);
                     break;
                 }
@@ -68,7 +62,7 @@ const Home = () => {
     };
     const handleDeleteTestSubject = async (test_number) => {
         await backend.delete(`/result/${test_number}`);
-        preProcessData();
+        fetchResultData();
         handleClose("delete");
     };
     const handleClose = (modalType) => {
@@ -78,11 +72,17 @@ const Home = () => {
         setModalShow({ ...modalShow, [modalType]: true });
     };
     const handleRemarkSubmit = () => {
-        backend.patch(`/remark/${selectedTestNumber}`, { new_remark: selectedRemark }).then((response) => {
+        backend.patch(`/result/${selectedTestNumber}/remark`, { remark: selectedRemark }).then((response) => {
             handleClose("remark");
-            preProcessData();
+            fetchResultData();
         });
     };
+
+    useEffect(() => {
+        document.title = "portal :: All results";
+        fetchResultData();
+    }, []);
+
     /*
     data-table
     */
@@ -115,22 +115,21 @@ const Home = () => {
         },
         {
             name: "testcase",
+            grow: 2,
             selector: (row) => row.testcase,
             sortable: true,
         },
         {
             name: "File uploaded",
+            grow: 2,
             selector: (row) => row.file_upload,
             sortable: false,
         },
         {
-            name: "action",
-            sortable: false,
-            right: true,
-            // ignoreRowClick: true,
+            name: "Remark",
             grow: 2,
             cell: (row) => (
-                <div className="d-flex">
+                <>
                     <div id={`remark-${row.testId}`}>{row.remark}</div>
                     <i
                         style={{ color: "#29a19c", padding: "0 10px" }}
@@ -142,6 +141,16 @@ const Home = () => {
                             handleShow("remark");
                         }}
                     ></i>
+                </>
+            ),
+        },
+        {
+            name: "action",
+            sortable: false,
+            right: true,
+            // ignoreRowClick: true,
+            cell: (row) => (
+                <div className="d-flex">
                     <i
                         style={{ color: "#e76f51", padding: "0 10px" }}
                         type="button"
@@ -186,17 +195,22 @@ const Home = () => {
                 />
                 <Modal show={modalShow.remark} onHide={() => handleClose("remark")}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Manage remark</Modal.Title>
+                        <Modal.Title>Edit remark</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <input type="text" value={selectedRemark} onChange={(e) => setSelectedRemark(e.target.value)} />
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={selectedRemark || ""}
+                            onChange={(e) => setSelectedRemark(e.target.value)}
+                        />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={() => handleClose("remark")}>
                             Close
                         </Button>
                         <Button variant="primary" onClick={handleRemarkSubmit}>
-                            Save Changes
+                            Save Change
                         </Button>
                     </Modal.Footer>
                 </Modal>

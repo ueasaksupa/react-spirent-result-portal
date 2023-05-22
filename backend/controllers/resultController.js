@@ -97,5 +97,7 @@ module.exports.deleteResultSubDocHandler = catchErrorAsync(async (req, res, next
 });
 
 module.exports.patchResultRemarkHandler = catchErrorAsync(async (req, res, next) => {
-    res.status(204).end();
+    let testId = req.params.testId;
+    let testresult = await ResultModel.findOneAndUpdate({ testId: testId }, { remark: req.body.remark }, { new: true });
+    res.status(200).json(testresult);
 });

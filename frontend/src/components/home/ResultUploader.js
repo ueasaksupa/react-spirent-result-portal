@@ -1,37 +1,13 @@
 import React, { useState, useEffect } from "react";
 import backend from "../api/backend";
 import { useNavigate } from "react-router-dom";
+import ManageTestcase from "./ManageTestcase";
 
 const ResultUploder = () => {
     const [testcase, setTestcase] = useState([]);
     const [inputParams, setInputParams] = useState({ testId: 1, testcase: "select testcase" });
     const [uploadSelector, setUploadSelector] = useState("result");
     const navigate = useNavigate();
-
-    useEffect(() => {
-        document.title = "portal :: Upload";
-        backend
-            .get("/testcase")
-            .then((response) => {
-                if (response.status === 200) {
-                    console.log("testcase:: ", response.data);
-                    setTestcase(response.data);
-                } else {
-                    setTestcase([]);
-                }
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-        backend
-            .get("/result/latest")
-            .then((response) => {
-                if (response.status === 200) {
-                    setInputParams({ testcase: response.data.testcase, testId: response.data.testId });
-                }
-            })
-            .catch((err) => console.log(err));
-    }, []);
 
     const renderSelectTestcase = () => {
         if (testcase.length === 0) {
@@ -117,13 +93,39 @@ const ResultUploder = () => {
             });
     };
 
+    const fetchAllTestcase = async () => {
+        try {
+            const response = await backend.get("/testcase");
+            console.log("testcase:: ", response.data);
+            setTestcase(response.data);
+        } catch (error) {
+            console.log(error);
+            setTestcase([]);
+        }
+    };
+
+    const fetchLatestResult = async () => {
+        try {
+            const response = await backend.get("/result/latest");
+            setInputParams({ testcase: response.data.testcase, testId: response.data.testId });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        document.title = "portal :: Upload";
+        fetchAllTestcase();
+        fetchLatestResult();
+    }, []);
+
     let formBody;
     if (uploadSelector === "result") {
         formBody = (
             <div className="cover-container d-flex h-100 p-3 mx-auto flex-column">
                 <form encType="multipart/form-data" onSubmit={onFormResultSubmitHandler}>
                     <div className="form-group row my-2">
-                        <label className="col-sm-2 col-form-label">Test number</label>
+                        <label className="col-sm-2 col-form-label">Test ID</label>
                         <div className="col-sm-10">
                             <input
                                 type="number"
@@ -181,7 +183,10 @@ const ResultUploder = () => {
                 </form>
             </div>
         );
+    } else if (uploadSelector === "testcase") {
+        formBody = <ManageTestcase testcase={testcase} fetchAllTestcase={fetchAllTestcase} />;
     }
+
     return (
         <div className="uploder-container">
             <div className="mb-4 btn-group btn-group-lg">
@@ -190,14 +195,21 @@ const ResultUploder = () => {
                     className={`btn btn-secondary ${uploadSelector === "result" ? "active" : null}`}
                     onClick={() => setUploadSelector("result")}
                 >
-                    upload result
+                    Upload result
                 </button>
                 <button
                     type="button"
                     className={`btn btn-secondary ${uploadSelector === "template" ? "active" : null}`}
                     onClick={() => setUploadSelector("template")}
                 >
-                    upload template
+                    Upload template
+                </button>
+                <button
+                    type="button"
+                    className={`btn btn-secondary ${uploadSelector === "testcase" ? "active" : null}`}
+                    onClick={() => setUploadSelector("testcase")}
+                >
+                    Manage testcase
                 </button>
             </div>
             {formBody}
